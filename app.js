@@ -71,12 +71,55 @@ var InitDemo = function () {
     //Getting ready to use vertex shader and fragment shader
     // Creating shaders
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-    var fragmentShader = gl.createShader(gl.FRAGEMENT_SHADER);
+    var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
     // Now need to compile shaders from code written in text earlier
     // Seeting shader sources (the code)
     gl.shaderSource(vertexShader, vertexShaderText);
     gl.shaderSource(fragmentShader, fragmentShaderText);
     // Now need to compile
     gl.compileShader(vertexShader);
+    // Checking for compilation errors
+    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+        // Message includes extra info
+        console.error('ERROR compiling vertex shader!', gl.getShaderInfoLog(vertexShader));
+        // Return so that function doesn't continue trying to run with
+        // an invalid shader
+        return;
+    }
     gl.compileShader(fragmentShader);
+    // Checking for compilation errors
+    if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+        // Message includes extra info
+        console.error('ERROR compiling fragment shader!', gl.getShaderInfoLog(fragmentShader));
+        // Return so that function doesn't continue trying to run with
+        // an invalid shader
+        return;
+    }
+    // Now we have a vertex shader and a fragment shader that are ready to use
+
+    // Now have to tell WebGL that the two shaders we have are the ones we want
+    // to use in the overall 'program'
+    var program = gl.createProgram();
+    // Notice that when attaching shaders to program we don't need to specify
+    // their type, as they already 'know'
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+
+    // Now that we have attached both our shaders, we need to link the program
+    // together (remember, compile then link)
+    gl.linkProgram(program);
+    // Now check for linker errors
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error('ERROR linking program!', gl.getProgramInfoLog(program));
+        return;
+    }
+
+    // Next step is 'validating' the program, which catches additional errors
+    // N.B. Only use this in testing, as it is more expensive - in actual game
+    // production this is only used in the debugging release
+    gl.validateProgram(program);
+    if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
+        console.error('ERROR: validating program!', gl.getProgramInfoLog(program));
+        return;
+    }
 }
