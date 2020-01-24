@@ -122,4 +122,80 @@ var InitDemo = function () {
         console.error('ERROR: validating program!', gl.getProgramInfoLog(program));
         return;
     }
+
+    // We have now set up the graphics card program and it is ready to
+    // accept our vertices
+    // We now need to set all of the information which the graphics card
+    // is going to be using
+    // Need to create a list of x and y positions that will define
+    // our triangle
+    // Once we have done that, we need to attach that list to the
+    // graphics card - to the vertex shader
+    // N.B. we define the vetices of a triangle in counter-clockwise
+    // order from the botom-left vertex
+    var triangleVertices = 
+    [ // X, Y
+        0.0, 0.5,
+        -0.5, -0.5,
+        0.5, -0.5
+    ];
+    // At this stage, triangleVertices is in the RAM, the graphics
+    // card (so, also the vertex shader) has no knowledge of it yet
+    // N.B. graphics card programming uses buffers to store chunks
+    // of information - a buffer is a chunk of info on the GPU
+    var triangleVertexBufferObject = gl.createBuffer();
+    // Need to bind buffer
+    // We are setting the vertex we have just created to be the
+    // active buffer
+    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexBufferObject);
+    // Setting the data to be used - note that in js we need to use
+    // new Float32Array because of how js normally stores array
+    // values not being what is needed here
+    // gl.STATIC_DRAW means we are going to send the info from the
+    // CPU memory to the GPU memory once - we're not going to change
+    // it at all
+    // triangleVertexBufferObject isn't called in bufferData because
+    // the active buffer is automatically used
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangleVertices), gl.STATIC_DRAW);
+    // Now need to give meaning to the values in attribute vertPosition
+    // - currently it is just a list of 6 values; need to understand
+    // what the vertices are
+    // First we get a location for the attribute - the attribute does
+    // have a number position you could work out yourself and use,
+    // however it is best to find it with code so that if its
+    // numerical position changes due to adding or removing
+    // other attributes, the code still works
+    var positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
+    // Now we specify the layout of the attribute
+    gl.vertexAttribPointer(
+        // Attribute location
+        positionAttribLocation,
+        // Number of elements per attribute
+        2,
+        // Type of elements
+        gl.FLOAT,
+        // Whether the data is normalised
+        // - worry about this later
+        gl.FALSE,
+        // Size of an individual vertex - the size of a
+        // 32 bit float is 4, but use term so its easier
+        // to understand
+        2 * Float32Array.BYTES_PER_ELEMENT,
+        // Offset from the beginning of a single vertex
+        // to this attribute
+        0
+    );
+    // Now need to enable vertexAttribArray - enables the attribute
+    // for use
+    gl.enableVertexAttribArray(positionAttribLocation);
+
+    // Now we need the main render loop - in a game this would be
+    // perhaps a while loop, but now we are just drawing a triangle
+    // First specify whcih program we want to use
+    gl.useProgram(program);
+    // Draw awways uses whichever buffer is actively bound
+    // - we are drawing trianlges; second parameter is how many
+    // vertexes we want to skip (in this case 0); third dparamter
+    // is how many verices we need to actually draw.
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
 }
