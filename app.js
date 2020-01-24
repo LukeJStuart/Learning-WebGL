@@ -1,3 +1,28 @@
+// Need a vertex shader - this has attributes as input parameters and
+// varyings as outputs. It is written in GL shader language - we use
+// strings to write this in this file rather than in a separate file
+// as js is a 'bit picky'
+// For every vertex shader there is a special value called gl_Position,
+// which determines where the vertex should be drawn on the render surface
+var vertexShaderText = 
+[
+// This first line is necessary, don't pay it too much attention right now
+'precision mediump float;',
+'',
+// vec2 will have an x and y component
+'attribute vec2 vertPosition;',
+'',
+'void main()',
+'{',
+// gl_Position is a 4-dimensional vector
+// We set x and y to the values in vertPosition
+// We set z to 0.0
+// We always set the last parameter to 1.0 (don't need to worry about this
+// right now)
+'   gl_Position = vec4(vertPosition, 0.0, 1.0);',
+'}'
+].join('/n');
+
 var InitDemo = function () {
     console.log('This is working.');
 
@@ -19,7 +44,7 @@ var InitDemo = function () {
     }
     // We now have our context; we have initialised WebGL (if possible)
 
-    // Starting by clearing to a flat backgorund colour
+    // Starting by clearing to a flat background colour
     gl.clearColor(0.75, 0.85, 0.8, 1.0);
     // Nothing will have happened yet, just 'set paint colour'
     // Now need to tell it what to clear in order to 'apply the paint'
@@ -29,5 +54,4 @@ var InitDemo = function () {
     // For good practice, we will clear both of these buffers, eventhough
     // just clearing the colour buffer would work
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
 }
