@@ -2,12 +2,17 @@
     <head>
         <title>WebGL - Simple Triangle</title>
     </head>
+    <!-- onload ensures that the js runs once the page has loaded, so the canvas will
+    have been loaded before the js runs. -->
     <body onload="InitDemo();">
         <canvas id="game-surface" width="800" height="600">
             Your browser does not support HTML5
         </canvas>
         <br />
         <i>Demo is above this text</i>
+        <!-- Loading js here in the body rather than in the head because it is loaded
+        and executed as soon as the broser sees it, and the js needs to deal with the
+        canvas, so want the canvas to load first. -->
         <script src="app.js"></script>
     </body>
 </html>
