@@ -21,7 +21,20 @@ var vertexShaderText =
 // right now)
 '   gl_Position = vec4(vertPosition, 0.0, 1.0);',
 '}'
-].join('/n');
+].join('\n');
+
+// Need a fragment shader - this will decide what to display for each
+// pixel based on the result of the vertex shader
+var fragmentShaderText = 
+[
+'precision mediump float;',
+'',
+'void main()',
+'{',
+// Values are Red, Green, Blue, Alpha
+'    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);',
+'}'
+].join('\n');
 
 var InitDemo = function () {
     console.log('This is working.');
@@ -54,4 +67,16 @@ var InitDemo = function () {
     // For good practice, we will clear both of these buffers, eventhough
     // just clearing the colour buffer would work
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    //Getting ready to use vertex shader and fragment shader
+    // Creating shaders
+    var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    var fragmentShader = gl.createShader(gl.FRAGEMENT_SHADER);
+    // Now need to compile shaders from code written in text earlier
+    // Seeting shader sources (the code)
+    gl.shaderSource(vertexShader, vertexShaderText);
+    gl.shaderSource(fragmentShader, fragmentShaderText);
+    // Now need to compile
+    gl.compileShader(vertexShader);
+    gl.compileShader(fragmentShader);
 }
