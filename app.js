@@ -11,9 +11,15 @@ var vertexShaderText =
 '',
 // vec2 will have an x and y component
 'attribute vec2 vertPosition;',
+// Adding an attribute for colour
+'attribute vec3 vertColour;',
+// Adding output for colour
+'varying vec3 fragColour;',
 '',
 'void main()',
 '{',
+// Not doing anything exciting with colour, just put output=input
+'fragColour = vertColour;',
 // gl_Position is a 4-dimensional vector
 // We set x and y to the values in vertPosition
 // We set z to 0.0
@@ -29,10 +35,13 @@ var fragmentShaderText =
 [
 'precision mediump float;',
 '',
+// Adding colour input
+'varying vec3 fragColour;',
 'void main()',
 '{',
 // Values are Red, Green, Blue, Alpha
-'    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);',
+// Note that RGB is taken from fragColour
+'    gl_FragColor = vec4(fragColour, 1.0);',
 '}'
 ].join('\n');
 
@@ -132,12 +141,15 @@ var InitDemo = function () {
     // Once we have done that, we need to attach that list to the
     // graphics card - to the vertex shader
     // N.B. we define the vetices of a triangle in counter-clockwise
-    // order from the botom-left vertex
+    // order
     var triangleVertices = 
-    [ // X, Y
-        0.0, 0.5,
-        -0.5, -0.5,
-        0.5, -0.5
+    [ // X, Y        R, G, B
+        0.0, 0.5,    1.0, 1.0, 0.0,
+        -0.5, -0.5,  0.7, 0.0, 1.0,
+        0.5, -0.5,   0.1, 1.0, 0.6,
+        1.0, 0.5,    0.5, 0.0, 0.5,
+        0.5, -0.5,   0.1, 1.0, 0.6,
+        0.0, 0.5,    1.0, 1.0, 0.0
     ];
     // At this stage, triangleVertices is in the RAM, the graphics
     // card (so, also the vertex shader) has no knowledge of it yet
@@ -166,7 +178,9 @@ var InitDemo = function () {
     // numerical position changes due to adding or removing
     // other attributes, the code still works
     var positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
-    // Now we specify the layout of the attribute
+    var colourAttribLocation = gl.getAttribLocation(program, 'vertColour');
+    // Now we specify the layout of the attributes, first we'll do position,
+    // then colour
     gl.vertexAttribPointer(
         // Attribute location
         positionAttribLocation,
@@ -180,14 +194,34 @@ var InitDemo = function () {
         // Size of an individual vertex - the size of a
         // 32 bit float is 4, but use term so its easier
         // to understand
-        2 * Float32Array.BYTES_PER_ELEMENT,
+        5 * Float32Array.BYTES_PER_ELEMENT,
         // Offset from the beginning of a single vertex
         // to this attribute
         0
     );
+    gl.vertexAttribPointer(
+        // Attribute location
+        colourAttribLocation,
+        // Number of elements per attribute
+        3,
+        // Type of elements
+        gl.FLOAT,
+        // Whether the data is normalised
+        // - worry about this later
+        gl.FALSE,
+        // Size of an individual vertex - the size of a
+        // 32 bit float is 4, but use term so its easier
+        // to understand
+        5 * Float32Array.BYTES_PER_ELEMENT,
+        // Offset from the beginning of a single vertex
+        // to this attribute - do need offset to get to
+        // colour values
+        2 * Float32Array.BYTES_PER_ELEMENT
+    );
     // Now need to enable vertexAttribArray - enables the attribute
     // for use
     gl.enableVertexAttribArray(positionAttribLocation);
+    gl.enableVertexAttribArray(colourAttribLocation);
 
     // Now we need the main render loop - in a game this would be
     // perhaps a while loop, but now we are just drawing a triangle
@@ -197,5 +231,5 @@ var InitDemo = function () {
     // - we are drawing trianlges; second parameter is how many
     // vertexes we want to skip (in this case 0); third dparamter
     // is how many verices we need to actually draw.
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
 }
