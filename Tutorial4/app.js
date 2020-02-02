@@ -1,4 +1,19 @@
 var InitDemo = function () {
+    Promise.all([
+        loadTextResource('/shader.vs.glsl'),
+        loadTextResource('/shader.fs.glsl'),
+        loadJSONResource('/Susan.json')
+    ]).then((message) => {
+        console.log('All promises passed');
+        RunDemo(message[0], message[1], message[2]);
+    }).catch((message) => {
+        console.log('Error; Promise Message: ' + message)
+    })
+    // N.B. Not sure why the catch case catches for errors
+    // in RunDemo.
+}
+
+var RunDemo = function (vertexShaderText, fragmentShaderText, SusanModel) {
     console.log('This is working.');
 
     var canvas = document.getElementById('game-surface');

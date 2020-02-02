@@ -5,11 +5,14 @@ var loadTextResource = (url) => {
         request.open('GET', url, true);
         request.onload = function () {
             if (request.status < 200 || request.status > 299) {
+                console.log('Rejected loadTextResource at ' + url);
                 reject('Error: HTTP Status ' + request.status + ' on resource ' + url);
             } else {
+                console.log('Resolved loadTextResource at ' + url);
                 resolve(request.responseText);
             }
         }
+        request.send();
     })
 }
 
@@ -25,7 +28,7 @@ var loadImage = (url) => {
 
 var loadJSONResource = (url) => {
     return new Promise((resolve, reject) => {
-        loadTextResource.then((responseText) => {
+        loadTextResource(url).then((responseText) => {
             try {
                 resolve(JSON.parse(responseText));
             } catch (e) {
