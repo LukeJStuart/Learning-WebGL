@@ -24,7 +24,14 @@ uniform mat4 mProj;
 void main()
 {
    fragTexCoord = vertTexCoord;
-   fragNormal = vertNormal;
+   // vertNormal is in the model space, not in the world space -
+   // we need to transform it to the world space.
+   // N.B. we are putting vertNormal into a vec4 so it can be
+   // used with mWorld; the last parameter determines whether
+   // translation occurs or not - with normals we do not want
+   // translation to occur, so we use 0.0.
+   // N.B. fragNormal is expecting a vec3, so we do .xyz
+   fragNormal = (mWorld * vec4(vertNormal, 0.0)).xyz;
 // In matrix multiplication, operations are carried out in
 // order from right to left - so in this example, first
 // there is a position, then it is multiplied by the mWorld
