@@ -59,6 +59,11 @@ var InitDemo = function () {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     // Enabling rasteriser to take depth into consideration.
     gl.enable(gl.DEPTH_TEST);
+    // Preventing unnecessary maths being done for the faces
+    // of the cube that are out of view.
+    gl.enable(gl.CULL_FACE);
+    gl.frontFace(gl.CCW);
+    gl.cullFace(gl.BACK);
 
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
     var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
