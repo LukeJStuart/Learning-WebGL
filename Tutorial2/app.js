@@ -24,7 +24,7 @@ var vertexShaderText =
 // matrix (rotating it in 3D space), then it is multiplied
 // by mView (where our camera is sitting), then it is
 // multiplied by mProj (to get us nice points).
-'   gl_Position = mProj * mView * mWorld * vec4(vertPosition, 0.0, 1.0);',
+'   gl_Position = mProj * mView * mWorld * vec4(vertPosition, 1.0);',
 '}'
 ].join('\n');
 
@@ -134,6 +134,9 @@ var InitDemo = function () {
     gl.enableVertexAttribArray(positionAttribLocation);
     gl.enableVertexAttribArray(colourAttribLocation);
 
+    // Tell state machine which program should be active.
+    gl.useProgram(program);
+
     // Setting uniforms
     //Getting locations
     var matWorldUniformLocation = gl.getUniformLocation(program, 'mWorld');
@@ -143,14 +146,55 @@ var InitDemo = function () {
     var worldMatrix = new Float32Array(16);
     var viewMatrix = new Float32Array(16);
     var projMatrix = new Float32Array(16);
-    // Setting values to identity matrices
+    // Setting values of the matrices
     glMatrix.mat4.identity(worldMatrix);
-    glMatrix.mat4.identity(viewMatrix);
-    glMatrix.mat4.identity(projMatrix);
+    // Using lookAt - need position of viewer, potisition viewer
+    // is looking at, and which way is up.
+    glMatrix.mat4.lookAt(viewMatrix, [0, 0, -2], [0, 0, 0], [0, 1, 0]);
+    // Using perspective - need fov, aspect ratio, nearest bound
+    // of what is shown and furtherest bound of what is shown
+    // (good idea to have these within 5 or 6 orders of
+    // magnitude of eachother).
+    glMatrix.mat4.perspective(projMatrix, glMatrix.glMatrix.toRadian(45), canvas.width / canvas.clientHeight, 0.1, 1000.0);
+    // Now we need to send the matrices to our shader
+    gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix)
+    gl.uniformMatrix4fv(matViewUniformLocation, gl.FALSE, viewMatrix)
+    gl.uniformMatrix4fv(matProjUniformLocation, gl.FALSE, projMatrix)
+    
+    // Main render loop
+    // Every game is going to have a loop that updates as frequently
+    // as the computer is able to process it - in this case this
+    // will rotate the object around.
+    // Traditionally it is not a good idea to define new variables
+    // inside your loop, as memory allocation takes a while.
+    var identityMatrix = new Float32Array(16);
+    glMatrix.mat4.identity(identityMatrix);
+    var angle = 0;
+    var loop = function () {
+        // performance.now gets the number of miliseconds since your
+        // window started.
+        // This sum means one full rotation every 6 seconds.
+        var angle = performance.now() / 1000 / 6 * 2 * Math.PI;
+        // Performing rotation on identity matrix and outputting to
+        // worldMatrix, then updating the uniform in the vertex
+        // shader.
+        glMatrix.mat4.rotate(worldMatrix, identityMatrix, angle, [0, 1, 0]);
+        gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix)
 
-    gl.useProgram(program);
+        // Clearing content from the previous frame
+        gl.clearColor(0.75, 0.85, 0.8, 1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+        // Drawing
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+        requestAnimationFrame(loop);
+    };
+    // requestAnimationFrame calls the supplied function every time
+    // the screen is ready to draw a new image (normally every
+    // 60th of a second); it will also not call the function if the
+    // tab is out of focus - good for power saving.
+    requestAnimationFrame(loop);
 }
 
 // NOTE - REACHED 14:52 INTO VIDEO 2
