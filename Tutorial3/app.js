@@ -108,42 +108,42 @@ var InitDemo = function () {
     }
 
     var boxVertices = 
-	[ // X, Y, Z           R, G, B
+	[ // X, Y, Z           U, V
 		// Top
-		-1.0, 1.0, -1.0,   0.5, 0.5, 0.5,
-		-1.0, 1.0, 1.0,    0.5, 0.5, 0.5,
-		1.0, 1.0, 1.0,     0.5, 0.5, 0.5,
-		1.0, 1.0, -1.0,    0.5, 0.5, 0.5,
+		-1.0, 1.0, -1.0,   0, 0,
+		-1.0, 1.0, 1.0,    0, 1,
+		1.0, 1.0, 1.0,     1, 1,
+		1.0, 1.0, -1.0,    1, 0,
 
 		// Left
-		-1.0, 1.0, 1.0,    0.75, 0.25, 0.5,
-		-1.0, -1.0, 1.0,   0.75, 0.25, 0.5,
-		-1.0, -1.0, -1.0,  0.75, 0.25, 0.5,
-		-1.0, 1.0, -1.0,   0.75, 0.25, 0.5,
+		-1.0, 1.0, 1.0,    0, 0,
+		-1.0, -1.0, 1.0,   1, 0,
+		-1.0, -1.0, -1.0,  1, 1,
+		-1.0, 1.0, -1.0,   0, 1,
 
 		// Right
-		1.0, 1.0, 1.0,    0.25, 0.25, 0.75,
-		1.0, -1.0, 1.0,   0.25, 0.25, 0.75,
-		1.0, -1.0, -1.0,  0.25, 0.25, 0.75,
-		1.0, 1.0, -1.0,   0.25, 0.25, 0.75,
+		1.0, 1.0, 1.0,    1, 1,
+		1.0, -1.0, 1.0,   0, 1,
+		1.0, -1.0, -1.0,  0, 0,
+		1.0, 1.0, -1.0,   1, 0,
 
 		// Front
-		1.0, 1.0, 1.0,    1.0, 0.0, 0.15,
-		1.0, -1.0, 1.0,   1.0, 0.0, 0.15,
-		-1.0, -1.0, 1.0,  1.0, 0.0, 0.15,
-		-1.0, 1.0, 1.0,   1.0, 0.0, 0.15,
+		1.0, 1.0, 1.0,    1, 1,
+		1.0, -1.0, 1.0,    1, 0,
+		-1.0, -1.0, 1.0,    0, 0,
+		-1.0, 1.0, 1.0,    0, 1,
 
 		// Back
-		1.0, 1.0, -1.0,   0.0, 1.0, 0.15,
-		1.0, -1.0, -1.0,  0.0, 1.0, 0.15,
-		-1.0, -1.0, -1.0, 0.0, 1.0, 0.15,
-		-1.0, 1.0, -1.0,  0.0, 1.0, 0.15,
+		1.0, 1.0, -1.0,    0, 0,
+		1.0, -1.0, -1.0,    0, 1,
+		-1.0, -1.0, -1.0,    1, 1,
+		-1.0, 1.0, -1.0,    1, 0,
 
 		// Bottom
-		-1.0, -1.0, -1.0, 0.5, 0.5, 1.0,
-		-1.0, -1.0, 1.0,  0.5, 0.5, 1.0,
-		1.0, -1.0, 1.0,   0.5, 0.5, 1.0,
-		1.0, -1.0, -1.0,  0.5, 0.5, 1.0
+		-1.0, -1.0, -1.0,   1, 1,
+		-1.0, -1.0, 1.0,    1, 0,
+		1.0, -1.0, 1.0,     0, 0,
+		1.0, -1.0, -1.0,    0, 1,
 	];
 
     // We use an index array to reduce repetiton
@@ -188,7 +188,7 @@ var InitDemo = function () {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(boxIndices), gl.STATIC_DRAW);
 
     var positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
-    var colourAttribLocation = gl.getAttribLocation(program, 'vertColour');
+    var texCoordAttribLocation = gl.getAttribLocation(program, 'vertTexCoord');
 
     gl.vertexAttribPointer(
         positionAttribLocation,
@@ -198,24 +198,44 @@ var InitDemo = function () {
         gl.FLOAT,
         gl.FALSE,
         // There are now 6 values per vertex.
-        6 * Float32Array.BYTES_PER_ELEMENT,
+        5 * Float32Array.BYTES_PER_ELEMENT,
         0
     );
 
     gl.vertexAttribPointer(
-        colourAttribLocation,
-        3,
+        texCoordAttribLocation,
+        2,
         gl.FLOAT,
         gl.FALSE,
         // There are now 6 values per vertex.
-        6 * Float32Array.BYTES_PER_ELEMENT,
+        5 * Float32Array.BYTES_PER_ELEMENT,
         // Greater coordinate length means greater
         // offset for colour.
         3 * Float32Array.BYTES_PER_ELEMENT
     );
 
     gl.enableVertexAttribArray(positionAttribLocation);
-    gl.enableVertexAttribArray(colourAttribLocation);
+    gl.enableVertexAttribArray(texCoordAttribLocation);
+    
+    // Creating texture
+    var boxTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, boxTexture);
+    // Setting wrapping for both coordinates, S and T are equivalents to
+    // U and V coordinates.
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    // Setting how a value is chosen (as size od where texture is
+    // displayed will not be the same size as the texture).
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(
+        gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        document.getElementById('crate-image')
+    );
+    // It is good practice to unbind all buffers after you
+    // load them in
+    gl.bindTexture(gl.TEXTURE_2D, null);
 
     // Tell state machine which program should be active.
     gl.useProgram(program);
@@ -275,6 +295,10 @@ var InitDemo = function () {
         gl.clearColor(0.75, 0.85, 0.8, 1.0);
         gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
+        // Binding texture and setting to first sampler (position 0).
+        gl.bindTexture(gl.TEXTURE_2D, boxTexture);
+        gl.activeTexture(gl.TEXTURE0);
+
         // Drawing - now using the index buffer instead of the
         // vertex buffer.
         // gl.UNSIGNED_SHORT is because we are storing the indices
@@ -290,5 +314,3 @@ var InitDemo = function () {
     // tab is out of focus - good for power saving.
     requestAnimationFrame(loop);
 }
-
-// NOTE - REACHED 14:52 INTO VIDEO 2
