@@ -5,8 +5,10 @@ var vertexShaderText =
 // As we are now working in 3D space, we make vertPosition
 // a vec3.
 'attribute vec3 vertPosition;',
-'attribute vec3 vertColour;',
-'varying vec3 fragColour;',
+'attribute vec2 vertTexCoord;',
+// Now we are using texture coordinates rather than colours
+// (these are vec2s rather than vec3s).
+'varying vec2 fragTexCoord;',
 // The matrices we will be using for transformations are the
 // same for every vertex, but are still inputs.
 // We will therfore use uniforms.
@@ -17,7 +19,7 @@ var vertexShaderText =
 '',
 'void main()',
 '{',
-'   fragColour = vertColour;',
+'   fragTexCoord = vertTexCoord;',
 // In matrix multiplication, operations are carried out in
 // order from right to left - so in this example, first
 // there is a position, then it is multiplied by the mWorld
@@ -32,11 +34,16 @@ var fragmentShaderText =
 [
 'precision mediump float;',
 '',
-'varying vec3 fragColour;',
+'varying vec2 fragTexCoord;',
+// Samplers work a bit differently to other uniforms -
+// rather than using getUniform4fv etc. you just use
+// them numbered as they appear here, so this sampler
+// is texture 0 - this sampler pulls from texture 0.
+'uniform sampler2D sampler;',
 '',
 'void main()',
 '{',
-'   gl_FragColor = vec4(fragColour, 1.0);',
+'   gl_FragColor = texture2D(sampler, fragTexCoord);',
 '}'
 ].join('\n');
 
