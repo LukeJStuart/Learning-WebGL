@@ -57,6 +57,8 @@ var InitDemo = function () {
 
     gl.clearColor(0.75, 0.85, 0.8, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    // Enabling rasteriser to take depth into consideration.
+    gl.enable(gl.DEPTH_TEST);
 
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
     var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
@@ -93,16 +95,85 @@ var InitDemo = function () {
         return;
     }
 
-    var triangleVertices =
-    [ // X, Y, Z         R, G, B
-        0.0, 0.5, 0.0,   1.0, 1.0, 0.0,
-        -0.5, -0.5, 0.0, 0.7, 0.0, 1.0,
-        0.5, -0.5, 0.0,  0.1, 1.0, 0.6
-    ];
+    var boxVertices = 
+	[ // X, Y, Z           R, G, B
+		// Top
+		-1.0, 1.0, -1.0,   0.5, 0.5, 0.5,
+		-1.0, 1.0, 1.0,    0.5, 0.5, 0.5,
+		1.0, 1.0, 1.0,     0.5, 0.5, 0.5,
+		1.0, 1.0, -1.0,    0.5, 0.5, 0.5,
 
-    var triangleVertexBufferObject = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexBufferObject);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangleVertices), gl.STATIC_DRAW);
+		// Left
+		-1.0, 1.0, 1.0,    0.75, 0.25, 0.5,
+		-1.0, -1.0, 1.0,   0.75, 0.25, 0.5,
+		-1.0, -1.0, -1.0,  0.75, 0.25, 0.5,
+		-1.0, 1.0, -1.0,   0.75, 0.25, 0.5,
+
+		// Right
+		1.0, 1.0, 1.0,    0.25, 0.25, 0.75,
+		1.0, -1.0, 1.0,   0.25, 0.25, 0.75,
+		1.0, -1.0, -1.0,  0.25, 0.25, 0.75,
+		1.0, 1.0, -1.0,   0.25, 0.25, 0.75,
+
+		// Front
+		1.0, 1.0, 1.0,    1.0, 0.0, 0.15,
+		1.0, -1.0, 1.0,   1.0, 0.0, 0.15,
+		-1.0, -1.0, 1.0,  1.0, 0.0, 0.15,
+		-1.0, 1.0, 1.0,   1.0, 0.0, 0.15,
+
+		// Back
+		1.0, 1.0, -1.0,   0.0, 1.0, 0.15,
+		1.0, -1.0, -1.0,  0.0, 1.0, 0.15,
+		-1.0, -1.0, -1.0, 0.0, 1.0, 0.15,
+		-1.0, 1.0, -1.0,  0.0, 1.0, 0.15,
+
+		// Bottom
+		-1.0, -1.0, -1.0, 0.5, 0.5, 1.0,
+		-1.0, -1.0, 1.0,  0.5, 0.5, 1.0,
+		1.0, -1.0, 1.0,   0.5, 0.5, 1.0,
+		1.0, -1.0, -1.0,  0.5, 0.5, 1.0
+	];
+
+    // We use an index array to reduce repetiton
+    // of vertices in the vertex array - each
+    // set of 3 numbers is the set of indices
+    // for the vertexes in the vertex array that
+    // make up a particular triangle.
+	var boxIndices =
+	[
+		// Top
+		0, 1, 2,
+		0, 2, 3,
+
+		// Left
+		5, 4, 6,
+		6, 4, 7,
+
+		// Right
+		8, 9, 10,
+		8, 10, 11,
+
+		// Front
+		13, 12, 14,
+		15, 14, 12,
+
+		// Back
+		16, 17, 18,
+		16, 18, 19,
+
+		// Bottom
+		21, 20, 22,
+		22, 20, 23
+	];
+
+    var boxVertexBufferObject = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, boxVertexBufferObject);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(boxVertices), gl.STATIC_DRAW);
+
+    // Now need a buffer for the indices
+    var boxIndexBufferObject = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, boxIndexBufferObject);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(boxIndices), gl.STATIC_DRAW);
 
     var positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
     var colourAttribLocation = gl.getAttribLocation(program, 'vertColour');
@@ -150,7 +221,7 @@ var InitDemo = function () {
     glMatrix.mat4.identity(worldMatrix);
     // Using lookAt - need position of viewer, potisition viewer
     // is looking at, and which way is up.
-    glMatrix.mat4.lookAt(viewMatrix, [0, 0, -2], [0, 0, 0], [0, 1, 0]);
+    glMatrix.mat4.lookAt(viewMatrix, [0, 0, -8], [0, 0, 0], [0, 1, 0]);
     // Using perspective - need fov, aspect ratio, nearest bound
     // of what is shown and furtherest bound of what is shown
     // (good idea to have these within 5 or 6 orders of
@@ -185,8 +256,12 @@ var InitDemo = function () {
         gl.clearColor(0.75, 0.85, 0.8, 1.0);
         gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
-        // Drawing
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        // Drawing - now using the index buffer instead of the
+        // vertex buffer.
+        // gl.UNSIGNED_SHORT is because we are storing the indices
+        // as integers in shorts.
+        // boxIndices.length gives the number of points to be drawn.
+        gl.drawElements(gl.TRIANGLES, boxIndices.length, gl.UNSIGNED_SHORT, 0);
 
         requestAnimationFrame(loop);
     };
