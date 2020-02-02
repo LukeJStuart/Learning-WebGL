@@ -144,9 +144,9 @@ var InitDemo = function () {
     var viewMatrix = new Float32Array(16);
     var projMatrix = new Float32Array(16);
     // Setting values to identity matrices
-    mat4.identity(worldMatrix);
-    mat4.identity(viewMatrix);
-    mat4.identity(projMatrix);
+    glMatrix.mat4.identity(worldMatrix);
+    glMatrix.mat4.identity(viewMatrix);
+    glMatrix.mat4.identity(projMatrix);
 
     gl.useProgram(program);
 
