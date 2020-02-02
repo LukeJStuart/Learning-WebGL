@@ -237,6 +237,11 @@ var InitDemo = function () {
     gl.uniformMatrix4fv(matViewUniformLocation, gl.FALSE, viewMatrix)
     gl.uniformMatrix4fv(matProjUniformLocation, gl.FALSE, projMatrix)
     
+    // Defining two rotation matrices to use so that the cube rotates
+    // in  multiple ways.
+    var xRotationMatrix = new Float32Array(16);
+    var yRotationMatrix = new Float32Array(16);
+
     // Main render loop
     // Every game is going to have a loop that updates as frequently
     // as the computer is able to process it - in this case this
@@ -251,10 +256,12 @@ var InitDemo = function () {
         // window started.
         // This sum means one full rotation every 6 seconds.
         var angle = performance.now() / 1000 / 6 * 2 * Math.PI;
-        // Performing rotation on identity matrix and outputting to
-        // worldMatrix, then updating the uniform in the vertex
-        // shader.
-        glMatrix.mat4.rotate(worldMatrix, identityMatrix, angle, [0, 1, 0]);
+        // Performing rotation on two matrices and then multiplying
+        // them and outputting the result to worldMatrix, then 
+        // updating the uniform in the vertex shader.
+        glMatrix.mat4.rotate(yRotationMatrix, identityMatrix, angle, [0, 1, 0]);
+        glMatrix.mat4.rotate(xRotationMatrix, identityMatrix, angle / 4, [1, 0, 0]);
+        glMatrix.mat4.mul(worldMatrix, yRotationMatrix, xRotationMatrix);
         gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix)
 
         // Clearing content from the previous frame
