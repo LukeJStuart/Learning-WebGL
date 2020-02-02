@@ -74,89 +74,38 @@ var RunDemo = function (vertexShaderText, fragmentShaderText, SusanModel, SusanI
         return;
     }
 
-    var boxVertices = 
-	[ // X, Y, Z           U, V
-		// Top
-		-1.0, 1.0, -1.0,   0, 0,
-		-1.0, 1.0, 1.0,    0, 1,
-		1.0, 1.0, 1.0,     1, 1,
-		1.0, 1.0, -1.0,    1, 0,
-
-		// Left
-		-1.0, 1.0, 1.0,    0, 0,
-		-1.0, -1.0, 1.0,   1, 0,
-		-1.0, -1.0, -1.0,  1, 1,
-		-1.0, 1.0, -1.0,   0, 1,
-
-		// Right
-		1.0, 1.0, 1.0,    1, 1,
-		1.0, -1.0, 1.0,   0, 1,
-		1.0, -1.0, -1.0,  0, 0,
-		1.0, 1.0, -1.0,   1, 0,
-
-		// Front
-		1.0, 1.0, 1.0,    1, 1,
-		1.0, -1.0, 1.0,    1, 0,
-		-1.0, -1.0, 1.0,    0, 0,
-		-1.0, 1.0, 1.0,    0, 1,
-
-		// Back
-		1.0, 1.0, -1.0,    0, 0,
-		1.0, -1.0, -1.0,    0, 1,
-		-1.0, -1.0, -1.0,    1, 1,
-		-1.0, 1.0, -1.0,    1, 0,
-
-		// Bottom
-		-1.0, -1.0, -1.0,   1, 1,
-		-1.0, -1.0, 1.0,    1, 0,
-		1.0, -1.0, 1.0,     0, 0,
-		1.0, -1.0, -1.0,    0, 1,
-	];
-
+    // Taking vertices for monkey from JSON of mesh.
+    var SusanVertices = SusanModel.meshes[0].vertices;
     // We use an index array to reduce repetiton
     // of vertices in the vertex array - each
     // set of 3 numbers is the set of indices
     // for the vertexes in the vertex array that
     // make up a particular triangle.
-	var boxIndices =
-	[
-		// Top
-		0, 1, 2,
-		0, 2, 3,
+    // Taking indices for monkey from JSON of mesh.
+    // Using concat so we don't get a list of lists.
+    var SusanIndices = [].concat.apply([], SusanModel.meshes[0].faces);
+    // Getting texture coordinates for monkey from mesh.
+    // N.B that the mesh format supports multiple textures - 
+    // in this case, we only want the first one.
+    var SusanTexCoords = SusanModel.meshes[0].texturecoords[0];
 
-		// Left
-		5, 4, 6,
-		6, 4, 7,
+    var susanPosVertexBufferObject = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, susanPosVertexBufferObject);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(SusanVertices), gl.STATIC_DRAW);
 
-		// Right
-		8, 9, 10,
-		8, 10, 11,
-
-		// Front
-		13, 12, 14,
-		15, 14, 12,
-
-		// Back
-		16, 17, 18,
-		16, 18, 19,
-
-		// Bottom
-		21, 20, 22,
-		22, 20, 23
-	];
-
-    var boxVertexBufferObject = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, boxVertexBufferObject);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(boxVertices), gl.STATIC_DRAW);
+    // Need a buffer for the texture coordinates
+    var susanTexCoordVertexBufferObject = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, susanTexCoordVertexBufferObject);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(SusanTexCoords), gl.STATIC_DRAW);
 
     // Now need a buffer for the indices
-    var boxIndexBufferObject = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, boxIndexBufferObject);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(boxIndices), gl.STATIC_DRAW);
+    var susanIndexBufferObject = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, susanIndexBufferObject);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(SusanIndices), gl.STATIC_DRAW);
 
+    // Use different buffers now for each of the following attributes.
+    gl.bindBuffer(gl.ARRAY_BUFFER, susanPosVertexBufferObject);
     var positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
-    var texCoordAttribLocation = gl.getAttribLocation(program, 'vertTexCoord');
-
     gl.vertexAttribPointer(
         positionAttribLocation,
         // Now that we have z coords, attribute length
@@ -165,28 +114,34 @@ var RunDemo = function (vertexShaderText, fragmentShaderText, SusanModel, SusanI
         gl.FLOAT,
         gl.FALSE,
         // There are now 6 values per vertex.
-        5 * Float32Array.BYTES_PER_ELEMENT,
+        3 * Float32Array.BYTES_PER_ELEMENT,
         0
     );
 
+    gl.bindBuffer(gl.ARRAY_BUFFER, susanTexCoordVertexBufferObject);
+    var texCoordAttribLocation = gl.getAttribLocation(program, 'vertTexCoord');
     gl.vertexAttribPointer(
         texCoordAttribLocation,
         2,
         gl.FLOAT,
         gl.FALSE,
         // There are now 6 values per vertex.
-        5 * Float32Array.BYTES_PER_ELEMENT,
+        2 * Float32Array.BYTES_PER_ELEMENT,
         // Greater coordinate length means greater
         // offset for colour.
-        3 * Float32Array.BYTES_PER_ELEMENT
+        0
     );
 
     gl.enableVertexAttribArray(positionAttribLocation);
     gl.enableVertexAttribArray(texCoordAttribLocation);
     
     // Creating texture
-    var boxTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, boxTexture);
+    var susanTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, susanTexture);
+    // Flipping texture due to difference between how FXB and
+    // WebGL use textures.
+    gl.pixelStorei(gl.UNPACK_FLIP_X_WEBGL, true);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     // Setting wrapping for both coordinates, S and T are equivalents to
     // U and V coordinates.
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -263,15 +218,15 @@ var RunDemo = function (vertexShaderText, fragmentShaderText, SusanModel, SusanI
         gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
         // Binding texture and setting to first sampler (position 0).
-        gl.bindTexture(gl.TEXTURE_2D, boxTexture);
+        gl.bindTexture(gl.TEXTURE_2D, susanTexture);
         gl.activeTexture(gl.TEXTURE0);
 
         // Drawing - now using the index buffer instead of the
         // vertex buffer.
         // gl.UNSIGNED_SHORT is because we are storing the indices
         // as integers in shorts.
-        // boxIndices.length gives the number of points to be drawn.
-        gl.drawElements(gl.TRIANGLES, boxIndices.length, gl.UNSIGNED_SHORT, 0);
+        // SusanIndices.length gives the number of points to be drawn.
+        gl.drawElements(gl.TRIANGLES, SusanIndices.length, gl.UNSIGNED_SHORT, 0);
 
         requestAnimationFrame(loop);
     };
