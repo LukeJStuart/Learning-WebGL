@@ -75,7 +75,7 @@ var RunDemo = function (vertexShaderText, fragmentShaderText, SusanModel, SusanI
     }
 
     // Taking vertices for monkey from JSON of mesh.
-    var SusanVertices = SusanModel.meshes[0].vertices;
+    var susanVertices = SusanModel.meshes[0].vertices;
     // We use an index array to reduce repetiton
     // of vertices in the vertex array - each
     // set of 3 numbers is the set of indices
@@ -83,25 +83,33 @@ var RunDemo = function (vertexShaderText, fragmentShaderText, SusanModel, SusanI
     // make up a particular triangle.
     // Taking indices for monkey from JSON of mesh.
     // Using concat so we don't get a list of lists.
-    var SusanIndices = [].concat.apply([], SusanModel.meshes[0].faces);
+    var susanIndices = [].concat.apply([], SusanModel.meshes[0].faces);
     // Getting texture coordinates for monkey from mesh.
     // N.B that the mesh format supports multiple textures - 
     // in this case, we only want the first one.
-    var SusanTexCoords = SusanModel.meshes[0].texturecoords[0];
+    var susanTexCoords = SusanModel.meshes[0].texturecoords[0];
+    // Getting normals of vertices of monkey from mesh -
+    // these are needed for lighting.
+    var susanNormals = SusanModel.meshes[0].normals;
 
     var susanPosVertexBufferObject = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, susanPosVertexBufferObject);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(SusanVertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(susanVertices), gl.STATIC_DRAW);
 
     // Need a buffer for the texture coordinates
     var susanTexCoordVertexBufferObject = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, susanTexCoordVertexBufferObject);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(SusanTexCoords), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(susanTexCoords), gl.STATIC_DRAW);
 
     // Now need a buffer for the indices
     var susanIndexBufferObject = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, susanIndexBufferObject);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(SusanIndices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(susanIndices), gl.STATIC_DRAW);
+
+    // Need a buffer for the normals
+    var susanNormalBufferObject = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, susanNormalBufferObject);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(susanNormals), gl.STATIC_DRAW);
 
     // Use different buffers now for each of the following attributes.
     gl.bindBuffer(gl.ARRAY_BUFFER, susanPosVertexBufferObject);
@@ -113,7 +121,6 @@ var RunDemo = function (vertexShaderText, fragmentShaderText, SusanModel, SusanI
         3,
         gl.FLOAT,
         gl.FALSE,
-        // There are now 6 values per vertex.
         3 * Float32Array.BYTES_PER_ELEMENT,
         0
     );
@@ -125,15 +132,25 @@ var RunDemo = function (vertexShaderText, fragmentShaderText, SusanModel, SusanI
         2,
         gl.FLOAT,
         gl.FALSE,
-        // There are now 6 values per vertex.
         2 * Float32Array.BYTES_PER_ELEMENT,
-        // Greater coordinate length means greater
-        // offset for colour.
+        0
+    );
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, susanNormalBufferObject);
+    var normalAttribLocation = gl.getAttribLocation(program, 'vertNormal');
+    gl.vertexAttribPointer(
+        normalAttribLocation,
+        3,
+        gl.FLOAT,
+        // Data in this case is normalised.
+        gl.TRUE,
+        3 * Float32Array.BYTES_PER_ELEMENT,
         0
     );
 
     gl.enableVertexAttribArray(positionAttribLocation);
     gl.enableVertexAttribArray(texCoordAttribLocation);
+    gl.enableVertexAttribArray(normalAttribLocation);
     
     // Creating texture
     var susanTexture = gl.createTexture();
@@ -225,8 +242,8 @@ var RunDemo = function (vertexShaderText, fragmentShaderText, SusanModel, SusanI
         // vertex buffer.
         // gl.UNSIGNED_SHORT is because we are storing the indices
         // as integers in shorts.
-        // SusanIndices.length gives the number of points to be drawn.
-        gl.drawElements(gl.TRIANGLES, SusanIndices.length, gl.UNSIGNED_SHORT, 0);
+        // susanIndices.length gives the number of points to be drawn.
+        gl.drawElements(gl.TRIANGLES, susanIndices.length, gl.UNSIGNED_SHORT, 0);
 
         requestAnimationFrame(loop);
     };

@@ -4,9 +4,15 @@ precision mediump float;
 // a vec3.
 attribute vec3 vertPosition;
 attribute vec2 vertTexCoord;
+// Attribute for normals
+attribute vec3 vertNormal;
 // Now we are using texture coordinates rather than colours
 // (these are vec2s rather than vec3s).
 varying vec2 fragTexCoord;
+// Varying for normals - we are doing per-fragment lighting,
+// which is higher quality than per-vertex lighting (there is
+// actually no difference with this model (all faces are flat)).
+varying vec3 fragNormal;
 // The matrices we will be using for transformations are the
 // same for every vertex, but are still inputs.
 // We will therfore use uniforms.
@@ -18,6 +24,7 @@ uniform mat4 mProj;
 void main()
 {
    fragTexCoord = vertTexCoord;
+   fragNormal = vertNormal;
 // In matrix multiplication, operations are carried out in
 // order from right to left - so in this example, first
 // there is a position, then it is multiplied by the mWorld
