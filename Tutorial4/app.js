@@ -2,10 +2,11 @@ var InitDemo = function () {
     Promise.all([
         loadTextResource('/shader.vs.glsl'),
         loadTextResource('/shader.fs.glsl'),
-        loadJSONResource('/Susan.json')
+        loadJSONResource('/Susan.json'),
+        loadImage('/SusanTexture.png')
     ]).then((message) => {
         console.log('All promises passed');
-        RunDemo(message[0], message[1], message[2]);
+        RunDemo(message[0], message[1], message[2], message[3]);
     }).catch((message) => {
         console.log('Error; Promise Message: ' + message)
     })
@@ -13,7 +14,7 @@ var InitDemo = function () {
     // in RunDemo.
 }
 
-var RunDemo = function (vertexShaderText, fragmentShaderText, SusanModel) {
+var RunDemo = function (vertexShaderText, fragmentShaderText, SusanModel, SusanImage) {
     console.log('This is working.');
 
     var canvas = document.getElementById('game-surface');
@@ -194,11 +195,11 @@ var RunDemo = function (vertexShaderText, fragmentShaderText, SusanModel) {
     // displayed will not be the same size as the texture).
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texImage2D(
-        gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        document.getElementById('crate-image')
-    );
+	gl.texImage2D(
+		gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,
+		gl.UNSIGNED_BYTE,
+		SusanImage
+	);
     // It is good practice to unbind all buffers after you
     // load them in
     gl.bindTexture(gl.TEXTURE_2D, null);
