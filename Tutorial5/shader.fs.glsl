@@ -12,9 +12,12 @@ void main()
 {
    // Lighting values - note that the direction of the
    // sunlight should be normalised.
-   vec3 ambientLightIntensity = vec3(0.2, 0.2, 0.5);
+   vec3 ambientLightIntensity = vec3(0.2, 0.2, 0.2);
    vec3 sunlightIntensity = vec3(0.9, 0.9, 0.9);
    vec3 sunlightDirection = normalize(vec3(3.0, 4.0, -2.0));
+   // The rasterisation process tends to denormalise vectors,
+   // therefore it is good to take this step.
+   vec3 surfaceNormal = normalize(fragNormal);
    // This gets the colour we previously would have sent
    // directly to gl_FragColor
    vec4 texel = texture2D(sampler, fragTexCoord);
@@ -22,7 +25,7 @@ void main()
    // N.B we use max with 0.0 because we don't want
    // negative values.
    vec3 lightIntensity = ambientLightIntensity +
-      sunlightIntensity * max(dot(fragNormal, sunlightDirection), 0.0);
+      sunlightIntensity * max(dot(surfaceNormal, sunlightDirection), 0.0);
    // N.B. when displaying normals as colours, x
    // corresponds to red, y corresponds to green, and
    // z corresponds to blue.
