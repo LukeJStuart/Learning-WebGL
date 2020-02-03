@@ -157,7 +157,6 @@ var RunDemo = function (vertexShaderText, fragmentShaderText, SusanModel, SusanI
     gl.bindTexture(gl.TEXTURE_2D, susanTexture);
     // Flipping texture due to difference between how FXB and
     // WebGL use textures.
-    gl.pixelStorei(gl.UNPACK_FLIP_X_WEBGL, true);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     // Setting wrapping for both coordinates, S and T are equivalents to
     // U and V coordinates.
