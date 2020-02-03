@@ -207,6 +207,17 @@ var RunDemo = function (vertexShaderText, fragmentShaderText, SusanModel, SusanI
     var xRotationMatrix = new Float32Array(16);
     var yRotationMatrix = new Float32Array(16);
 
+    // Lighting information
+    gl.useProgram(program);
+
+    var ambientUniformLocation = gl.getUniformLocation(program, 'ambientLightIntensity');
+    var sunlightDirUniformLocation = gl.getUniformLocation(program, 'sun.direction');
+    var sunlightIntUniformLocation = gl.getUniformLocation(program, 'sun.colour');
+
+    gl.uniform3f(ambientUniformLocation, 0.2, 0.2, 0.2);
+    gl.uniform3f(sunlightDirUniformLocation, 3.0, 4.0, -2.0);
+    gl.uniform3f(sunlightIntUniformLocation, 0.9, 0.9, 0.9);
+
     // Main render loop
     // Every game is going to have a loop that updates as frequently
     // as the computer is able to process it - in this case this
