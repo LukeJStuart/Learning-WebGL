@@ -28,6 +28,16 @@ function start(gl) {
         return;
     }
 
+    // Get the storage location of attribute variable
+    var a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+    if (a_Position < 0) {
+        console.log('Failed to get the storage location of a_Position');
+        return;
+    }
+
+    // Pass vertex position to attribute variable
+    gl.vertexAttrib3f(a_Position, 0.0, 0.0, 0.0);
+    
     // Specify the colour for clearing the canvas
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
